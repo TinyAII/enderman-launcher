@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <title>游戏日志</title>
+  <script>
+    // 跟主窗口同一套判断（见 index.html 里的说明）：默认深色，cookie 里记浅色。
+    try {
+      if (/(?:^|;\s*)ml_theme=light(?:;|$)/.test(document.cookie)) {
+        document.documentElement.dataset.theme = 'light';
+      }
+    } catch (e) { /* 读不到就按深色 */ }
+  </script>
+  <link rel="stylesheet" href="./style.css" />
+  <style>
+    html, body { height: 100%; }
+    body { display: flex; flex-direction: column; overflow: hidden; }
+
+    .bar-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--line);
+      background: var(--bg-soft);
+      flex: 0 0 auto;
+    }
+
+    .bar-head .name { font-weight: 600; }
+    .bar-head .spacer { flex: 1; }
+
+    /* 状态行自己写样式，不复用主界面的 .status：
+       那个类带 min-height，放进 flex 行里会撑出一条空带。 */
+    .hstate { font-size: 12px; color: var(--text-dim); }
+    .hstate.error { color: var(--danger); }
+
+    #log {
+      flex: 1;
+      min-height: 0;
+      /* 只纵向滚。日志里有大量不带空格的长串（类名、堆栈），
+         换行规则总会漏掉几个，横向滚动条一出现就把整块高度吃掉。 */
+      overflow-y: auto;
+      overflow-x: hidden;
+      border: 0;
+      border-radius: 0;
+      margin: 0;
+      padding: 10px 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="bar-head">
+    <span class="name" id="instance">准备中…</span>
+    <span class="hstate" id="state"></span>
+    <span class="spacer"></span>
+    <button class="act" id="clear">清空</button>
+  </div>
+
+  <pre id="log"></pre>
+
+  <script type="module" src="./log.js"></script>
+</body>
+</html>

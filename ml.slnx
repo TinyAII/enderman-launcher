@@ -1,0 +1,24 @@
+<Solution>
+  <Folder Name="/plugins/">
+    <Project Path="plugins/ML.Plugin.Vanilla/ML.Plugin.Vanilla.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/ML.Boot/ML.Boot.csproj" />
+    <Project Path="src/ML.Core/ML.Core.csproj" />
+    <Project Path="src/ML.Features/ML.Features.csproj">
+      <Platform Project="x64" />
+    </Project>
+    <Project Path="src/ML.Host/ML.Host.csproj" />
+    <Project Path="src/ML.Plugin.Abstractions/ML.Plugin.Abstractions.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ML.Core.Tests/ML.Core.Tests.csproj">
+      <Platform Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/ML.Verify/ML.Verify.csproj">
+      <Platform Project="x64" />
+    </Project>
+  </Folder>
+</Solution>

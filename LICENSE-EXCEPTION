@@ -1,0 +1,53 @@
+ML 启动器 —— GPL-3.0 插件例外条款
+=====================================
+
+本文件依据 GNU General Public License 第 3 版（下称「GPL-3.0」）第 7 条
+「额外许可」（Additional Permissions），对 ML 启动器（下称「本程序」）
+追加以下例外。本例外不减少 GPL-3.0 赋予任何人的权利，只额外授予权利。
+
+一、定义
+
+1. 「本程序」指本仓库中以 GPL-3.0 发布的全部内容，包括启动器宿主
+   （`src/ML.Host`）、内核（`src/ML.Core`）以及随附的界面资源。
+2. 「插件」指由第三方独立编写、通过本程序公开的插件契约加载或调用的
+   独立代码，包括声明式配置包、托管程序集与独立进程程序。
+3. 「契约程序集」指 `src/ML.Plugin.Abstractions`。
+
+二、授予的额外许可
+
+1. 任何人可以编写、发布、分发插件，并可为插件选择**任意许可条款**
+   （包括专有许可），无需因此使插件整体受 GPL-3.0 约束。
+2. 插件与本程序之间的「链接、加载、调用、进程间通信」本身，不构成
+   GPL-3.0 意义上的派生作品。
+3. 契约程序集以 Apache License 2.0 单独授权（见
+   `LICENSE-APACHE-2.0.txt`），即使它位于本仓库内亦然。任何人可
+   在任意项目中引用它，不受 GPL-3.0 约束。
+
+三、条件
+
+1. 上述例外仅适用于**未修改**本程序的情形。若你修改了本程序本体
+   （`src/ML.Host`、`src/ML.Core` 或界面资源）并对外分发，则整个
+   修改后的程序仍须按 GPL-3.0 开源，本例外不延伸至你的修改。
+2. 若你把本程序与插件打包成**单一作品**分发（例如把插件一并塞进
+   同一个安装包并作为整体发布），该整体分发物须遵守 GPL-3.0；但
+   插件自身仍可保留其原有许可。
+3. 分发本程序时须保留本文件与 `LICENSE`。
+
+四、保留
+
+本例外仅由本程序的版权持有人授予。若你希望移除本例外，可自行从
+GPL-3.0 授权中删除本文件——但那样此后你分发的版本将不再享有上述
+额外许可。
+
+---
+ML Launcher — GPL-3.0 Plugin Exception
+
+This is an additional permission under section 7 of the GNU General Public
+License, version 3. It grants the right to develop, distribute and license
+plugins for this program under terms of your choice (including proprietary
+terms) without those plugins becoming subject to GPL-3.0 by reason of being
+loaded, linked to, called by, or communicating with this program. The plugin
+contract assembly (`src/ML.Plugin.Abstractions`) is licensed separately under
+the Apache License 2.0. The exception does not extend to modified versions of
+the program itself, and a distribution that bundles the program and plugins
+into a single work must be licensed under GPL-3.0 as a whole.

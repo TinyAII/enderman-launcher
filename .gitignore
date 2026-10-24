@@ -1,0 +1,38 @@
+# ── 构建产物 ─────────────────────────────────────────
+# Directory.Build.props 把所有输出都导到 artifacts/（接近 1 GB，含测试数据）
+artifacts/
+bin/
+obj/
+*.tmpcheck.js
+
+# ── 本地运行数据 ─────────────────────────────────────
+# 便携版数据目录、实例、日志、插件状态：都是本机状态，不该进仓库
+data/
+instances/
+logs/
+plugins/state.json
+plugins/plugin-data/
+*.log
+
+# ── 测试结果 ─────────────────────────────────────────
+# 每次 dotnet test 都会生成，不该进仓库
+TestResults/
+*.trx
+
+# ── 编辑器 / 系统 ────────────────────────────────────
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+Thumbs.db
+desktop.ini
+
+# ── 临时文件 ─────────────────────────────────────────
+tmp/
+*.bak
+
+# ── AI 工作区 ────────────────────────────────────────
+# 里面有本地绝对路径与私有笔记（.workbuddy/memory/*.md），公开仓库不该带出去。
+# 需要把决策记录纳入版本时，用 git add -f .workbuddy/memory/MEMORY.md 单独加。
+.workbuddy/

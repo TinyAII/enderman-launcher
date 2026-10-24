@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    功能层：一切"能让东西就位"的逻辑——下载、安装编排、资源获取、版本清单。
+
+    这个项目刻意**不在内核里**。它现在直接引用 ML.Core（为了能共用 GamePaths、
+    VersionMetadata 这些类型），但它最终要变成第一个官方插件 ML.Plugin.Installer：
+    那时它只能引用 ML.Plugin.Abstractions，不能再引用 ML.Core。
+
+    之所以现在不做成真插件：契约面（ML.Plugin.Abstractions）还没有下载/安装这两族
+    接口，硬拆只会得到一个假的模块边界。等 M3 把契约长出来再搬，项目位置已经预留好了。
+  -->
+  <PropertyGroup>
+    <RootNamespace>ML.Features</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ML.Core\ML.Core.csproj" />
+  </ItemGroup>
+
+</Project>

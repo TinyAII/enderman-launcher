@@ -1,0 +1,19 @@
+<div class="pi">
+  <p class="hint">从 Mojang 官方清单装原版。装的时候进度会出现在「下载」页，能暂停、能限速。</p>
+
+  <div class="pi-row">
+    <select id="pi-version" aria-label="版本">
+      <option>正在拉取版本清单…</option>
+    </select>
+    <button class="act" id="pi-refresh" type="button">刷新</button>
+    <button class="act primary" id="pi-install" type="button" disabled>安装</button>
+  </div>
+
+  <div class="status" id="pi-status"></div>
+</div>
+
+<style>
+  .pi { max-width: 560px; }
+  .pi-row { display: flex; gap: 8px; margin-top: 14px; }
+  .pi-row select { flex: 1 1 auto; min-width: 0; }
+</style>

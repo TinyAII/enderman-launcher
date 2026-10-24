@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Enderman Launcher</title>
+  <script>
+    // 在首帧之前把主题套上，避免「先闪一下深色再变浅色」。
+    // 用 cookie 而不是 localStorage：宿主每次监听 127.0.0.1:0，端口一变
+    // localStorage 的 origin 就变了，而 cookie 不区分端口。
+    try {
+      if (/(?:^|;\s*)ml_theme=light(?:;|$)/.test(document.cookie)) {
+        document.documentElement.dataset.theme = 'light';
+      }
+    } catch (e) { /* 读不到就按深色 */ }
+  </script>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <!-- 系统标题栏已经去掉了（FormBorderStyle.None），这条是自己画的：
+       左边是应用名，右边三个窗口按钮，中间空白处可以拖着走。 -->
+  <div class="titlebar">
+    <div class="titlebar-brand">
+      <img class="app-logo" src="./assets/logo.png" alt="" draggable="false" />
+      <span>Enderman Launcher</span>
+    </div>
+
+    <div class="titlebar-buttons">
+      <button class="win-btn" type="button" data-win="minimize" title="最小化" aria-label="最小化">
+        <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2 6h8" stroke="currentColor" stroke-width="1.2"/></svg>
+      </button>
+      <button class="win-btn" type="button" data-win="maximize" title="最大化" aria-label="最大化">
+        <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><rect x="2.4" y="2.4" width="7.2" height="7.2" rx="1.2" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+      </button>
+      <button class="win-btn close" type="button" data-win="close" title="关闭" aria-label="关闭">
+        <svg viewBox="0 0 12 12" width="12" height="12" aria-hidden="true"><path d="M2.6 2.6l6.8 6.8M9.4 2.6l-6.8 6.8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="app">
+    <nav class="rail">
+      <button class="brand" data-nav="home" title="启动" aria-label="启动">
+        <img class="app-logo brand-logo" src="./assets/logo.png" alt="" draggable="false" />
+      </button>
+
+      <button class="rail-btn" data-nav="instances" title="实例" aria-label="实例">
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+          <rect x="3.5" y="3.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+          <rect x="13.5" y="3.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+          <rect x="3.5" y="13.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+          <rect x="13.5" y="13.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <span class="rail-label">实例</span>
+      </button>
+
+      <button class="rail-btn" data-nav="plugins" title="插件" aria-label="插件">
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+          <path d="M10 3.5h4v2.2a2 2 0 1 0 0 4v0h2.2v4h-2.2a2 2 0 1 1-4 0H7.8v-4H10a2 2 0 1 0 0-4V3.5z"
+                fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+        <span class="rail-label">插件</span>
+      </button>
+
+      <button class="rail-btn" data-nav="account" title="账号" aria-label="账号">
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+          <circle cx="12" cy="8.4" r="3.6" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M4.8 20c0-3.6 3.2-6 7.2-6s7.2 2.4 7.2 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="rail-label">账号</span>
+      </button>
+
+      <button class="rail-btn" data-nav="downloads" title="下载" aria-label="下载">
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+          <path d="M12 4v10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M7.5 10.5 12 15l4.5-4.5" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M4.5 18.5h15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="rail-label">下载</span>
+      </button>
+
+      <button class="rail-btn" data-nav="settings" title="设置" aria-label="设置">
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+          <circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 2.8v2.4M12 18.8v2.4M4.6 7.4l2.1 1.2M17.3 15.4l2.1 1.2M4.6 16.6l2.1-1.2M17.3 8.6l2.1-1.2"
+                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="rail-label">设置</span>
+      </button>
+
+      <div class="rail-plugin-pages" id="rail-plugin-pages"></div>
+
+      <div class="rail-spacer"></div>
+    </nav>
+
+    <div class="main">
+      <header class="page-head">
+        <div>
+          <h1 id="title">实例</h1>
+          <p id="subtitle">一个实例就是一套独立的存档、模组和设置。</p>
+        </div>
+        <div class="head-tools">
+          <div class="head-actions" id="plugin-actions" hidden>
+            <button class="icon-btn" id="plugins-reload" type="button" title="重新扫描插件" aria-label="重新扫描插件">
+              <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
+                <path d="M20 12a8 8 0 1 1-2.4-5.7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <path d="M20 4.4V9h-4.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+
+            <div class="split">
+              <button class="act primary" id="plugins-add" type="button">+ 添加插件</button>
+              <button class="act primary split-caret" id="plugins-add-more" type="button" aria-label="其它添加方式">▾</button>
+              <div class="menu" id="plugins-add-menu" hidden>
+                <button type="button" data-add="folder">从本地文件夹…</button>
+                <button type="button" data-add="github">从 GitHub 仓库…</button>
+                <div class="menu-sep"></div>
+                <button type="button" data-add="open">打开插件目录</button>
+              </div>
+            </div>
+          </div>
+
+          <button class="icon-btn" id="theme-toggle" type="button" title="切换到浅色" aria-label="切换到浅色">
+            <svg class="icon-sun" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
+              <circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4L17 7M7 17l-1.6 1.6"
+                    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
+              <path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.4 8.4 0 1 0 10.2 10.2z"
+                    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <div class="scroll">
+        <section class="panel" id="panel-home" hidden>
+          <div class="home">
+            <img class="home-logo" src="./assets/logo.png" alt="" draggable="false" />
+
+            <div class="home-picks">
+              <label class="home-pick">
+                <span class="home-pick-label">实例</span>
+                <select id="home-instance"></select>
+              </label>
+
+              <label class="home-pick">
+                <span class="home-pick-label">账号</span>
+                <select id="home-account"></select>
+              </label>
+            </div>
+
+            <button class="home-launch" id="home-launch" type="button">启动游戏</button>
+            <div class="status home-status" id="home-status"></div>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-instances">
+          <div class="list-head">
+            <h2 class="list-title">实例</h2>
+            <div class="list-actions">
+              <button class="act primary" id="open-new-instance">新建实例</button>
+              <div class="plugin-slot inline" data-slot="instances.toolbar"></div>
+            </div>
+          </div>
+          <div class="status" id="instances-status"></div>
+          <div id="instances"></div>
+        </section>
+
+        <section class="panel" id="panel-downloads" hidden>
+          <div class="list-head">
+            <h2 class="list-title">下载任务</h2>
+            <div class="list-actions">
+              <button class="act primary" id="download-new" type="button">新建下载任务</button>
+            </div>
+          </div>
+          <p class="hint">一个任务可以包含多个文件，比如「版本 + 加载器」算一个任务，不会拆成两个。</p>
+          <div class="status" id="download-status"></div>
+          <div class="dl-list" id="download-list"></div>
+        </section>
+        <section class="panel" id="panel-settings" hidden>
+          <div class="settings-shell">
+            <aside class="settings-nav">
+              <button class="set-tab active" type="button" data-set="general">
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="7" r="2.2" fill="var(--bg-soft)" stroke="currentColor" stroke-width="1.8"/><circle cx="15" cy="12" r="2.2" fill="var(--bg-soft)" stroke="currentColor" stroke-width="1.8"/><circle cx="8" cy="17" r="2.2" fill="var(--bg-soft)" stroke="currentColor" stroke-width="1.8"/></svg>游戏</button>
+              <button class="set-tab" type="button" data-set="start">
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>启动</button>
+              <button class="set-tab" type="button" data-set="memory">
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9.5 3v3.5M14.5 3v3.5M9.5 17.5V21M14.5 17.5V21M3 9.5h3.5M3 14.5h3.5M17.5 9.5H21M17.5 14.5H21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>内存</button>
+              <button class="set-tab" type="button" data-set="java">
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M6 9h11v5.5a4.5 4.5 0 0 1-4.5 4.5H10.5A4.5 4.5 0 0 1 6 14.5V9Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M17 10.5h1.6a2.4 2.4 0 0 1 0 4.8H17M9 5.5c0-1 1-1.4 1-2.4M12.5 5.5c0-1 1-1.4 1-2.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Java</button>
+              <button class="set-tab" type="button" data-set="download">
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 4v10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M7.5 10.5 12 15l4.5-4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 18.5h15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>下载</button>
+              <button class="set-tab" type="button" data-set="advanced">
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M14.5 6.5a3.5 3.5 0 0 0 4.6 4.6L21 12l-8.4 8.4a2.2 2.2 0 0 1-3.1 0l-2.9-2.9a2.2 2.2 0 0 1 0-3.1L15 6l1.5 1.5Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>高级</button>
+              <button class="set-tab" type="button" data-set="about">
+                <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="12" r="8.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 10.6V17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7.6" r="1.2" fill="currentColor"/></svg>关于</button>
+            </aside>
+
+            <div class="settings-main">
+              <div class="settings-page" id="set-page-general">
+          <div class="group">
+            <div class="group-head">
+              <h2>Minecraft 目录</h2>
+              <button class="act accent" id="game-root-add" type="button">添加目录</button>
+            </div>
+            <p class="hint">启动器只从这里已经装好的版本里启动，不下载文件。点一行切换当前目录。</p>
+            <div class="dir-list" id="game-root-list"></div>
+            <div class="status" id="set-game-root-status"></div>
+          </div>
+
+                <div class="group">
+                  <h2>启动器日志</h2>
+                  <p class="hint">游戏跑起来时的输出会存到这些文件里。游戏起不来的话，这里是唯一的证据。</p>
+
+                  <div class="set-rows">
+                    <div class="set-row">
+                      <span class="set-row-label">启动器日志目录</span>
+                      <div class="set-row-ctl">
+                        <div class="set-row-inline">
+                          <input id="log-dir" readonly spellcheck="false" />
+                          <button class="act" id="log-open" type="button">打开目录</button>
+                          <button class="act" id="log-clear" type="button">清理日志</button>
+                        </div>
+                        <div class="status inline" id="log-status"></div>
+                      </div>
+                    </div>
+
+                    <div class="set-row">
+                      <span class="set-row-label">崩溃日志</span>
+                      <div class="set-row-ctl">
+                        <div class="set-row-inline">
+                          <input id="crash-dir" readonly spellcheck="false" />
+                          <button class="act" id="crash-open" type="button">打开目录</button>
+                        </div>
+                        <div class="status inline" id="crash-summary"></div>
+                      </div>
+                    </div>
+
+                    <div class="set-row">
+                      <span class="set-row-label">诊断日志</span>
+                      <div class="set-row-ctl">
+                        <label class="pick" data-tip="开启后启动时会额外写一段头信息：完整启动命令、每个 classpath 条目、
+Java 路径与版本、工作目录、内存与 GC 预设、相关环境变量。
+排查「点了启动没反应 / 闪退」时才需要开，平时关着日志小。">
+                          <input type="checkbox" id="set-diagnostic-log" />
+                          <span class="pick-text">记录完整启动命令与 classpath</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-page" id="set-page-start" hidden>
+                <div class="group">
+                  <h2>启动器窗口</h2>
+                  <p class="hint">游戏起来之后启动器怎么处理。隐藏或关闭都不影响游戏本身。</p>
+
+                  <div class="set-rows">
+                    <div class="set-row">
+                      <span class="set-row-label">游戏启动后</span>
+                      <div class="set-row-ctl">
+                        <select id="set-visibility">
+                                        <option value="keep">仍保持不变</option>
+                                        <option value="close">立即关闭启动器（游戏继续运行，但不再记录日志）</option>
+                                        <option value="hide-close">隐藏启动器，游戏退出后自动关闭</option>
+                                        <option value="hide-reopen">隐藏启动器，游戏退出后重新打开</option>
+                                        <option value="minimize">最小化启动器</option>
+                                      </select>
+                      </div>
+                    </div>
+
+                    <div class="set-row">
+                      <span class="set-row-label">进程优先级</span>
+                      <div class="set-row-ctl">
+                        <select id="set-priority">
+                                        <option value="high">高（游戏更流畅，别的程序可能卡）</option>
+                                        <option value="normal">中（平衡）</option>
+                                        <option value="low">低（优先保证别的程序，适合挂机）</option>
+                                      </select>
+                      </div>
+                    </div>
+
+                    <div class="set-row">
+                      <span class="set-row-label">游戏窗口大小</span>
+                      <div class="set-row-ctl">
+                        <select id="set-game-window">
+                                        <option value="default">默认（游戏自己决定，通常 854×480）</option>
+                                        <option value="fullscreen">全屏</option>
+                                        <option value="launcher">与启动器窗口一致</option>
+                                        <option value="custom">自定义尺寸（用实例里的窗口宽/高）</option>
+                                        <option value="maximized">最大化（铺满屏幕工作区）</option>
+                                      </select>
+                      </div>
+                    </div>
+                <div class="set-row">
+                  <span class="set-row-label">启动前检查文件完整性</span>
+                  <div class="set-row-ctl">
+                    <label class="pick">
+                      <input type="checkbox" id="set-check-files" />
+                      <span class="pick-text">只查文件在不在、大小对不对，不算哈希（很快）</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="set-row">
+                  <span class="set-row-label">缺失文件自动补全</span>
+                  <div class="set-row-ctl">
+                    <label class="pick">
+                      <input type="checkbox" id="set-auto-repair" />
+                      <span class="pick-text">发现缺文件就自动补，补齐后再启动</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="set-row">
+                  <span class="set-row-label">启动后自动加入服务器</span>
+                  <div class="set-row-ctl">
+                    <input id="set-auto-server" spellcheck="false" placeholder="mc.example.com 或 mc.example.com:25565" />
+                    <div class="hint tight">留空就不自动进服。MC 只认一个服务器，且只在启动那一次连。</div>
+                  </div>
+                </div>
+
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-page" id="set-page-memory" hidden>
+          <div class="group">
+            <h2>内存分配</h2>
+            <p class="hint">自动配置按模组数量与当前可用内存决定堆大小；自定义由你定。改完点下面的「保存」。</p>
+
+            <label class="pick" data-tip="根据安装的 Mod 量与电脑剩余内存，动态调整为游戏分配的内存。基准 2 GB，每 50 个模组加 512 MB，最多不超过物理内存的一半。">
+              <input type="radio" name="mem-mode" value="auto" id="mem-auto" />
+              <span class="pick-text">自动配置</span>
+            </label>
+
+            <label class="pick">
+              <input type="radio" name="mem-mode" value="custom" id="mem-custom" />
+              <span class="pick-text">自定义</span>
+              <input type="range" id="mem-range" class="mem-range" min="512" max="32768" step="256" />
+              <span class="mem-read" id="mem-read">—</span>
+            </label>
+            <p class="hint-tight mem-ceiling" id="mem-ceiling"></p>
+
+            <label class="pick" data-tip="内存优化会把各进程的工作集换出到页面文件，让「已用内存」立刻下降；但它不是真的释放物理内存，被换出去的页很快又会被读回来。用机械硬盘时这一步可能卡顿几秒。">
+              <input type="checkbox" id="mem-optimize" />
+              <span class="pick-text">启动游戏前进行内存优化</span>
+            </label>
+
+            <div class="mem-meter">
+              <div class="mem-meter-head"><span>已使用内存</span><span>游戏分配</span></div>
+              <div class="mem-track">
+                <i class="mem-used" id="mem-bar-used"></i>
+                <i class="mem-game" id="mem-bar-game"></i>
+              </div>
+              <div class="mem-meter-foot"><span id="mem-used-text">—</span><span id="mem-game-text">—</span></div>
+            </div>
+          </div>
+
+              </div>
+
+              <div class="settings-page" id="set-page-java" hidden>
+                <div class="group">
+                  <h2>Java 运行时</h2>
+                  <p class="hint">选一个本机已装的 Java。排在上面的优先度高，「自动选择」就用优先度最高的那个。</p>
+            <div class="form-row">
+              <span class="form-label">Java 列表</span>
+              <div class="form-ctl">
+                <div class="java-head">
+                  <span class="status inline" id="java-status"></span>
+                  <button class="act" type="button" id="java-refresh">重新扫描</button>
+                </div>
+                <div class="java-list" id="java-list"></div>
+                <input id="set-java" spellcheck="false" placeholder="粘贴 Java 目录，例如 C:\Program Files\Eclipse Adoptium\jdk-21" hidden />
+              </div>
+            </div>
+
+                </div>
+              </div>
+
+              <div class="settings-page" id="set-page-download" hidden>
+                <div class="group">
+                  <h2>下载</h2>
+                  <p class="hint">同时下载几个文件、跑几个任务、要不要限速。改完点右下角保存。</p>
+
+                  <div class="set-rows">
+                    <div class="set-row">
+                      <span class="set-row-label">最大下载线程</span>
+                      <div class="set-row-ctl">
+                        <div class="range-row">
+                          <input type="range" id="dl-threads" class="mem-range" min="1" max="256" step="1" value="64" />
+                          <span class="range-value" id="dl-threads-value">64</span>
+                        </div>
+                        <div class="hint tight">这里是「同时下几个文件」，不是把一个文件切成 256 块。默认 64，吃满带宽通常够了。</div>
+                      </div>
+                    </div>
+
+                    <div class="set-row">
+                      <span class="set-row-label">限制下载速度</span>
+                      <div class="set-row-ctl">
+                        <div class="set-row-inline">
+                          <input id="dl-speed" type="number" min="0" max="10000" placeholder="0 = 不限" />
+                          <span class="unit">MB/s</span>
+                        </div>
+                        <div class="hint tight">留 0 或不填就是不限速。限速是全局的，不是每个线程各限一份。</div>
+                      </div>
+                    </div>
+
+                    <div class="set-row">
+                      <span class="set-row-label">同时下载任务数</span>
+                      <div class="set-row-ctl">
+                        <select id="dl-parallel">
+                          <option value="1">1 个（最稳，占带宽最少）</option>
+                          <option value="2">2 个</option>
+                          <option value="3">3 个</option>
+                          <option value="5">5 个</option>
+                          <option value="8">8 个</option>
+                          <option value="10">10 个</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-page" id="set-page-advanced" hidden>
+                <div class="group">
+                  <h2>高级选项</h2>
+                  <p class="hint">这些项会直接写进启动命令或系统设置，改之前请确认知道它的作用。</p>
+                  <div class="advanced-body">
+
+            <div class="form-row" data-tip="插件 dll 被重新编译或替换后，重新扫描时提醒你重启启动器。
+热加载虽然能让新 dll 生效，但旧实例的静态状态、后台线程不一定收干净——交付给别人时建议开着。">
+              <span class="form-label">插件变更后提示重启</span>
+              <div class="form-ctl">
+                <label class="pick">
+                  <input type="checkbox" id="set-warn-plugin-restart" />
+                  <span class="pick-text">插件文件变过，就提醒一次</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="form-row" data-tip="启动 Minecraft 时附加的 JVM 参数，多个之间用空格分隔，会拼在本启动器生成的参数之后。
+写错会让游戏直接起不来，不确定就别动。">
+              <span class="form-label">Java 虚拟机参数</span>
+              <div class="form-ctl">
+                <textarea id="set-jvm" rows="3" spellcheck="false" placeholder="-XX:+UseG1GC"></textarea>
+              </div>
+            </div>
+
+            <div class="form-row" data-tip="直接拼在启动命令末尾的游戏参数，一行一个。
+例如填 --demo 就以试玩模式启动。">
+              <span class="form-label">游戏参数</span>
+              <div class="form-ctl">
+                <textarea id="set-game-args" rows="2" spellcheck="false" placeholder="--demo"></textarea>
+              </div>
+            </div>
+
+            <div class="form-row" data-tip="在游戏启动前执行，语法同 Windows 命令行，工作目录是实例的 game 目录。
+例如 del crash-reports\* 清掉旧崩溃报告。
+失败或超过 30 秒只记日志，不会阻止游戏启动。">
+              <span class="form-label">启动前执行命令</span>
+              <div class="form-ctl">
+                <input id="set-prelaunch" spellcheck="false" placeholder="例如：del crash-reports\*" />
+              </div>
+            </div>
+
+            <div class="form-row" data-tip="内存管理会追加几条 GC 参数：
+标准 G1GC 只开 G1；调优 G1GC 额外限制最大停顿；ZGC 需要 Java 15+，分代 ZGC 需要 Java 21+，版本不够会自动忽略。">
+              <span class="form-label">内存管理</span>
+              <div class="form-ctl">
+                <select id="set-gc">
+                  <option value="default">默认（不额外指定）</option>
+                  <option value="g1">标准 G1GC</option>
+                  <option value="g1-tuned">调优 G1GC</option>
+                  <option value="zgc">尽量使用 ZGC</option>
+                  <option value="zgc-generational">尽量使用分代 ZGC</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row checks">
+              <span class="form-label"></span>
+              <div class="form-ctl">
+                <label class="pick" data-tip="Java 18 以下的版本读不了中文路径，会直接启动失败。
+本启动器会自动把中文的 Java 目录 / 游戏目录映射成一个纯英文的目录联接（junction）再启动
+—— 效果等同 PCL 那个外部 wrapper 程序，但不需要额外的 exe。
+勾上 = 关掉这层兼容，一般不需要勾。">
+                  <input type="checkbox" id="set-disable-wrapper" />
+                  <span class="pick-text">禁用 Java Launch Wrapper</span>
+                </label>
+
+                <label class="pick" data-tip="在 Windows 里把启动器和 Java 标记为「高性能」，让双显卡笔记本用独显渲染。
+只有一块显卡时改了也没影响。">
+                  <input type="checkbox" id="set-gpu" />
+                  <span class="pick-text">使用高性能显卡</span>
+                </label>
+              </div>
+            </div>
+
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-page" id="set-page-about" hidden>
+                <div class="about-hero">
+                  <img class="about-logo" src="./assets/logo.png" alt="" draggable="false" />
+
+                  <h2 class="about-name">Enderman Launcher</h2>
+                  <div class="about-version">v<span id="about-version">—</span></div>
+
+                  <div class="about-actions">
+                    <button class="act" id="about-repo" type="button">查看 GitHub 仓库</button>
+                    <button class="act primary" id="update-check" type="button">检查更新</button>
+                    <button class="act primary" id="update-apply" type="button" hidden>立即更新并重启</button>
+                  </div>
+
+                  <div class="status" id="update-status"></div>
+                </div>
+
+                <div class="group">
+                  <h2>启动器更新</h2>
+
+                  <div class="set-rows">
+                    <div class="set-row">
+                      <span class="set-row-label">更新通道</span>
+                      <div class="set-row-ctl">
+                        <select id="update-channel" class="compact" disabled>
+                          <option value="win">正式版</option>
+                        </select>
+                        <div class="hint tight">目前只提供正式版通道。</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" id="panel-plugins" hidden>
+          <div class="account-filter">
+            <div class="seg" role="tablist" aria-label="插件来源">
+              <button class="seg-btn active" data-plugin-source="official" role="tab" aria-selected="true">官方</button>
+              <button class="seg-btn" data-plugin-source="third" role="tab" aria-selected="false">第三方</button>
+            </div>
+          </div>
+
+          <div class="status" id="plugins-status"></div>
+          <div class="plugin-restart" id="plugins-restart" hidden>
+            <span class="plugin-restart-text" id="plugins-restart-text"></span>
+            <button class="act primary" id="plugins-restart-go" type="button">重启启动器</button>
+          </div>
+          <div id="plugins"></div>
+        </section>
+
+        <section class="panel" id="panel-account" hidden>
+          <div class="status" id="account-status"></div>
+          <div class="plugin-slot" data-slot="account.before-list"></div>
+
+          <div class="account-filter">
+            <div class="seg" role="tablist" aria-label="账号类型">
+              <button class="seg-btn active" data-account-kind="msa" role="tab" aria-selected="true">正版账号</button>
+              <button class="seg-btn" data-account-kind="offline" role="tab" aria-selected="false">离线账号</button>
+            </div>
+
+            <div class="filter-actions">
+              <button class="act primary" id="account-login">登录正版账号</button>
+              <button class="act" id="account-add-offline" hidden>添加离线账号</button>
+            </div>
+          </div>
+
+          <div id="accounts"></div>
+        </section>
+      </div>
+
+      <div class="settings-footer">
+        <div class="toolbar">
+          <button class="act primary" id="set-save">保存设置</button>
+          <span class="status inline" id="set-save-status"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="crash-dialog" hidden>
+    <div class="dialog wide">
+      <h2>上次启动器崩溃了</h2>
+      <p class="hint">这多半是某个插件把进程带崩的。下面四个选项都能让你继续用：</p>
+
+      <div class="crash-info">
+        <div class="crash-line"><span>时间</span><b id="crash-time">—</b></div>
+        <div class="crash-line"><span>涉事插件</span><b id="crash-plugin">—</b></div>
+        <div class="crash-line"><span>异常</span><b id="crash-reason">—</b></div>
+      </div>
+
+      <div class="crash-actions">
+        <button class="act" id="crash-export" type="button">导出日志</button>
+        <button class="act" id="crash-restart" type="button">重启启动器</button>
+        <button class="act" id="crash-restart-without" type="button">关闭崩溃插件并重启</button>
+        <button class="act primary" id="crash-restart-safe" type="button">关闭所有插件并重启</button>
+      </div>
+
+      <div class="status" id="crash-status"></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="first-run" hidden>
+    <div class="dialog">
+      <h2>先指定游戏目录</h2>
+      <p class="hint">
+        这份启动器只负责把<strong>本机已经装好</strong>的版本拉起来，不下载文件。
+        选一个现成的 <code>.minecraft</code> 文件夹就行。
+      </p>
+      <div id="first-run-candidates"></div>
+      <div class="toolbar">
+        <input id="first-run-path" class="wide" spellcheck="false" placeholder="也可以直接粘贴路径" />
+        <button class="act primary" id="first-run-use">用这个目录</button>
+      </div>
+      <div class="status" id="first-run-status"></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="instance-edit" hidden>
+    <div class="dialog">
+      <h2>编辑实例</h2>
+      <p class="hint" id="edit-subtitle">改完保存，下次启动生效。存档不受影响。</p>
+      <div class="grid">
+        <label class="field">内存（MB）
+          <input id="edit-memory" type="number" min="512" max="65536" step="256" />
+        </label>
+        <label class="field">窗口宽
+          <input id="edit-width" type="number" min="320" max="7680" step="1" />
+        </label>
+        <label class="field">窗口高
+          <input id="edit-height" type="number" min="320" max="7680" step="1" />
+        </label>
+        <label class="field">玩家名
+          <input id="edit-player" size="16" maxlength="16" spellcheck="false" />
+        </label>
+      </div>
+      <div class="toolbar">
+        <button class="act primary" id="edit-save">保存</button>
+        <button class="act" id="edit-cancel">取消</button>
+        <span class="status inline" id="edit-status"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="account-login-box" hidden>
+    <div class="dialog">
+      <h2>登录正版账号</h2>
+      <p class="hint">用微软设备码登录：启动器不碰你的密码，只拿一个可以随时撤销的令牌。</p>
+
+      <div class="device-code" id="account-device" hidden>
+        <p>登录网页已经自动打开，在网页里输入这个码：</p>
+        <div class="device-code-value" id="device-code">…</div>
+        <p class="device-code-hint">
+          <span id="device-copy-state">在下面选中这个码，或点「复制代码」。</span>
+          网页没弹出来就点下面「重新打开网页」；
+          网络不佳时挂个代理，或者换台设备打开 <code id="device-uri">…</code> 输入上面的码。
+        </p>
+      </div>
+
+      <div class="status" id="login-status"></div>
+
+      <div class="toolbar">
+        <button class="act primary" id="login-start">开始登录</button>
+        <button class="act" id="login-open" hidden>重新打开网页</button>
+        <button class="act" id="login-copy" hidden>复制代码</button>
+        <button class="act" id="account-cancel" hidden>取消登录</button>
+        <button class="act" id="login-close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="account-add" hidden>
+    <div class="dialog">
+      <h2>添加离线账号</h2>
+      <p class="hint">
+        离线账号不需要密码，只用一个名字。名字决定存档里的 UUID——
+        <strong>改名等于换人</strong>，旧存档里的玩家数据会对不上。
+      </p>
+      <label class="field">玩家名
+        <input id="account-new-name" maxlength="16" spellcheck="false" placeholder="例如 Steve" />
+      </label>
+      <div class="status" id="account-add-status"></div>
+      <div class="toolbar">
+        <button class="act primary" id="account-add-save">添加</button>
+        <button class="act" id="account-add-cancel">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="account-pick" hidden>
+    <div class="dialog">
+      <h2>选择启动账号</h2>
+      <p class="hint" id="account-pick-subtitle">这个实例以后用哪个账号启动。</p>
+      <div id="account-pick-list"></div>
+      <div class="toolbar">
+        <button class="act" id="account-pick-cancel">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip" id="tip" hidden></div>
+
+  <div class="overlay" id="plugin-detail" hidden>
+    <div class="dialog">
+      <h2 id="detail-title">插件</h2>
+      <div class="detail-meta" id="detail-meta"></div>
+      <div class="detail-perms" id="detail-perms"></div>
+      <div class="detail-settings" id="detail-settings"></div>
+      <div class="toolbar">
+        <button class="act" id="detail-folder">打开目录</button>
+        <button class="act" id="detail-toggle">停用</button>
+        <button class="act primary" id="detail-close">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="add-plugin" hidden>
+    <div class="dialog">
+      <h2>添加插件</h2>
+      <p class="hint">输入插件的本地目录、.mlp 压缩包，或者 GitHub 仓库地址。</p>
+
+      <label class="field">来源
+        <select id="add-plugin-kind">
+          <option value="folder">本地目录 / 压缩包</option>
+          <option value="github">GitHub 仓库</option>
+        </select>
+      </label>
+
+      <label class="field">路径或地址
+        <input id="add-plugin-source" spellcheck="false"
+               placeholder="D:\插件\我的插件 或 https://github.com/owner/repo" />
+      </label>
+
+      <div class="warn-box">
+        请确认插件来源可信。插件在本机以你的权限运行：能读写文件、能联网，
+        来源不明的插件可能损坏游戏文件或泄露数据。
+      </div>
+
+      <div class="status" id="add-plugin-status"></div>
+
+      <div class="toolbar">
+        <button class="act primary" id="add-plugin-install">安装</button>
+        <button class="act" id="add-plugin-close">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="notice" hidden>
+    <div class="dialog">
+      <h2 id="notice-title">提示</h2>
+      <p class="notice-text" id="notice-text"></p>
+      <p class="notice-raw mono" id="notice-raw" hidden></p>
+      <div class="toolbar">
+        <button class="act" id="notice-action" hidden>打开</button>
+        <button class="act primary" id="notice-ok">知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="game-root-note" hidden>
+    <div class="dialog">
+      <h2>备注 Minecraft 目录</h2>
+      <p class="hint">只改列表里显示的名字，不动磁盘上的文件夹。</p>
+
+      <label class="field">备注
+        <input id="game-root-note-input" maxlength="40" placeholder="例如 官方启动器目录" />
+      </label>
+
+      <div class="status" id="game-root-note-status"></div>
+
+      <div class="toolbar">
+        <button class="act" id="game-root-note-cancel">取消</button>
+        <button class="act primary" id="game-root-note-save">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="download-new-dialog" hidden>
+    <div class="dialog">
+      <h2>新建下载任务</h2>
+      <p class="hint">一行一个链接，<strong>每行各自一个任务</strong>。只支持 http/https。</p>
+
+      <label class="field">链接
+        <textarea id="download-urls" rows="5" spellcheck="false" placeholder="https://example.com/pack.zip"></textarea>
+      </label>
+
+      <div class="status" id="download-new-status"></div>
+
+      <div class="toolbar">
+        <button class="act" id="download-new-cancel">取消</button>
+        <button class="act primary" id="download-new-start">开始下载</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="new-instance" hidden>
+    <div class="dialog">
+      <h2>新建实例</h2>
+      <p class="hint">实例只记版本 id，不复制游戏文件；版本和库仍然共用游戏目录里那一份。</p>
+
+      <label class="field">名字
+        <input id="new-name" placeholder="例如 生存服" />
+      </label>
+
+      <label class="field">版本
+        <select id="new-version"></select>
+      </label>
+
+      <div class="status" id="new-instance-status"></div>
+
+      <div class="toolbar">
+        <button class="act primary" id="create-instance">新建</button>
+        <button class="act" id="new-instance-cancel">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="confirm" hidden>
+    <div class="dialog">
+      <h2 id="confirm-title">确认</h2>
+      <p class="hint" id="confirm-text"></p>
+      <div class="toolbar">
+        <button class="act" id="confirm-no">取消</button>
+        <button class="act danger-solid" id="confirm-yes">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

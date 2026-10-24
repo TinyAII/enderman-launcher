@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\ML.Plugin.Abstractions\ML.Plugin.Abstractions.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <!-- 官方插件跟着启动器一起走：构建完直接落到数据目录的 plugins/ml.vanilla/。
+       不这么做的话，每 build 一次插件页就空了（得手动复制 dll）。
+       路径一律用正斜杠：反斜杠在 XML 属性里会被转义吃掉（\a -> 响铃符、\b -> 退格）。 -->
+  <Target Name="CopyToLauncher" AfterTargets="Build">
+    <PropertyGroup>
+      <LauncherPluginDir>$(MSBuildProjectDirectory)/../../artifacts/bin/ML.Host/debug/data/plugins/ml.vanilla</LauncherPluginDir>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(LauncherPluginDir)" />
+
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(LauncherPluginDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/manifest.json" DestinationFolder="$(LauncherPluginDir)" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)/icon.png" DestinationFolder="$(LauncherPluginDir)"
+          Condition="Exists('$(MSBuildProjectDirectory)/icon.png')" />
+    <Copy SourceFiles="$(TargetDir)$(AssemblyName).deps.json" DestinationFolder="$(LauncherPluginDir)"
+          Condition="Exists('$(TargetDir)$(AssemblyName).deps.json')" />
+
+    <!-- 插件的页面也要一起过去，否则插件有入口但页面是空的 -->
+    <ItemGroup>
+      <PluginUiFiles Include="$(MSBuildProjectDirectory)/ui/**/*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PluginUiFiles)"
+          DestinationFiles="@(PluginUiFiles->'$(LauncherPluginDir)/ui/%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
+
+</Project>

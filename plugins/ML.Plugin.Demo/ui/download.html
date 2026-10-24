@@ -1,0 +1,19 @@
+<div class="card toolbar">
+  <strong>这一整页来自插件</strong>
+  <span class="status inline" data-demo="page-tag"></span>
+</div>
+
+<p class="hint">
+  内核里没有任何和这个页面相关的代码。下面的按钮不是在调内核的 API，
+  而是在调这个插件自己的 C# 代码（<code>MLPlugin.call</code> → <code>IPluginCommand</code>）。
+  下载器装完 mod 之后要干的事，就是这一类。
+</p>
+
+<div class="toolbar">
+  <input data-demo="inst" placeholder="实例名" size="14" />
+  <button class="act" type="button" data-demo="status">读宿主状态</button>
+  <button class="act" type="button" data-demo="mods">看 mods</button>
+  <button class="act" type="button" data-demo="drop">写占位文件</button>
+</div>
+
+<p class="hint" data-demo="out"></p>

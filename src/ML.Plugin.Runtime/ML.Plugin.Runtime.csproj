@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 只引契约层。运行时不允许认识 ML.Core / ML.Host，否则插件系统就没边界了。 -->
+    <ProjectReference Include="..\ML.Plugin.Abstractions\ML.Plugin.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

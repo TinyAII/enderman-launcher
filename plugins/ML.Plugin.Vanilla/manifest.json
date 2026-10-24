@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "ml.vanilla",
+  "name": "原版安装器",
+  "version": "1.0.0",
+  "apiVersion": "1.1",
+  "icon": "icon.png",
+  "description": "从 Mojang 官方清单下载并安装原版 Minecraft 版本（库、客户端、资源、natives）。",
+  "type": "managed",
+  "entry": "ML.Plugin.Vanilla.dll",
+  "entryType": "ML.Plugin.Vanilla.VanillaPlugin",
+  "permissions": ["ui:page"],
+  "minHostVersion": "0.1.0",
+  "ui": [
+    {
+      "slot": "instances.toolbar",
+      "html": "ui/toolbar.html",
+      "script": "ui/toolbar.js",
+      "title": "下载游戏实例",
+      "replaces": ["open-new-instance"]
+    },
+    {
+      "slot": "page",
+      "html": "ui/install.html",
+      "script": "ui/install.js",
+      "title": "原版安装",
+      "icon": "icon.png"
+    }
+  ]
+}

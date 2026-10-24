@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- 输出到 bin/，宿主加载的是拷进插件目录的那份 dll -->
+    <AssemblyName>ml.demo</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 插件只能引契约层；引 ML.Core 就等着被 CI 拦下来 -->
+    <ProjectReference Include="..\..\src\ML.Plugin.Abstractions\ML.Plugin.Abstractions.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>

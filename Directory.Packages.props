@@ -1,0 +1,25 @@
+<Project>
+
+  <!-- 中央包版本管理：版本号只在这里出现一次。 -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 宿主 UI 容器：WebView2（系统已随 Edge 安装运行时 143.x，无需随包分发） -->
+    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
+  </ItemGroup>
+
+  <ItemGroup Label="测试">
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+  </ItemGroup>
+
+  <ItemGroup Label="更新">
+    <PackageVersion Include="Velopack" Version="1.2.161" />
+  </ItemGroup>
+
+</Project>

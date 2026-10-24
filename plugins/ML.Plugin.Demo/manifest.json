@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "ml.demo",
+  "name": "示例插件",
+  "version": "1.0.0",
+  "description": "演示启动前钩子：给每次启动加一条 -Dml.demo=1",
+  "apiVersion": "1.0",
+  "type": "managed",
+  "entry": "ml.demo.dll",
+  "entryType": "ML.Plugin.Demo.DemoPlugin",
+  "permissions": [
+    "launch:jvm-args",
+    "ui:page"
+  ],
+  "ui": [
+    {
+      "slot": "instances.toolbar",
+      "html": "ui/toolbar.html",
+      "script": "ui/panel.js"
+    },
+    {
+      "slot": "account.before-list",
+      "html": "ui/banner.html",
+      "script": "ui/panel.js"
+    },
+    {
+      "slot": "page",
+      "title": "示例下载",
+      "icon": "ui/icon.svg",
+      "html": "ui/download.html",
+      "script": "ui/download.js"
+    },
+    {
+      "slot": "settings",
+      "html": "ui/settings.html",
+      "script": "ui/settings.js"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    ML.Host —— 唯一同时接触「宿主进程 / WebView2 / 插件运行时 / Kestrel」的项目。
+    这里刻意不用 Microsoft.NET.Sdk.Web：我们只需要 Kestrel 的 FrameworkReference，
+    不需要 Web SDK 的静态资源管道（前端由 Vite 构建，产物按需从磁盘 Serve）。
+  -->
+  <PropertyGroup>
+    <!-- 应用图标：多尺寸 ico（16~256），exe 与任务栏都用它 -->
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <!-- 覆盖 Directory.Build.props 的 net10.0：WinForms/WebView2 必须带 -windows 平台后缀。
+         ML.Core 与 ML.Plugin.Abstractions 保持 net10.0 中立，便于单测与未来复用。 -->
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <OutputType>WinExe</OutputType>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Walking Skeleton 阶段先不开 AOT；AOT 是可测项，见 docs/adr -->
+    <PublishAot>false</PublishAot>
+    <PublishSingleFile>false</PublishSingleFile>
+
+    <!-- 用户看到的文件名就是 Enderman Launcher.exe。程序集名跟着改，因为它决定 exe 名与
+         AppContext.BaseDirectory（便携版数据目录就是拿它算的）。 -->
+    <AssemblyName>Enderman Launcher</AssemblyName>
+    <Product>Enderman Launcher</Product>
+    <AssemblyTitle>Enderman Launcher</AssemblyTitle>
+    <Description>Minecraft 启动器：只启动本机已装好的版本。</Description>
+    <Version>0.1.0</Version>
+    <FileVersion>0.1.0.0</FileVersion>
+    <NeutralLanguage>zh-Hans</NeutralLanguage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <!-- 页面编进程序集：单文件发布之后没有 src/ML.Web 目录可服。
+       LogicalName 统一带 web/ 前缀，运行时按这个前缀筛资源名。 -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\ML.Web\**\*.*"
+                      Exclude="..\ML.Web\bin\**;..\ML.Web\obj\**;..\ML.Web\node_modules\**;..\ML.Web\**\*.map"
+                      LogicalName="web/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" />
+    <PackageReference Include="Velopack" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ML.Core\ML.Core.csproj" />
+    <ProjectReference Include="..\ML.Features\ML.Features.csproj" />
+    <ProjectReference Include="..\ML.Plugin.Abstractions\ML.Plugin.Abstractions.csproj" />
+    <ProjectReference Include="..\ML.Plugin.Runtime\ML.Plugin.Runtime.csproj" />
+  </ItemGroup>
+
+</Project>
